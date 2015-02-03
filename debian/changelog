@@ -1,3 +1,14 @@
+grc (1.5) unstable; urgency=low
+
+  * added configuration file for the 'mount' command (thanks to Emanuele Aina)
+  * catch SIGPIPE in grcat (closes: #689705),
+    thanks to Дмитрий Кацубо for pointing this out
+  * add several configuration files (thanks to Dark Wizard)
+  * preliminary python3 support (thanks to Dark Wizard and Andreas Niederl),
+    as a consequence, grc requires at least python2.6
+
+ -- Radovan Garabík <garabik@kassiopeia.juls.savba.sk>  Sat, 10 Aug 2013 14:23:01 +0200
+
 grc (1.4) unstable; urgency=low
 
   * fix grcat argument search path, 

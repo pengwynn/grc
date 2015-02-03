@@ -6,6 +6,15 @@ garabik @ kassiopeia.juls.savba.sk
 
 ===================================================================
 
+For the impatient - try following commands:
+
+grc netstat
+grc ping hostname
+grc tail /var/log/syslog
+grc ps aux
+
+---------------
+
 Being overflooded with different logfile colo(u)?ri(s|z)ers, colortails,
 gccolors, colormakes and similar programs for making  text files or outputs
 of different programs more readable by inserting ansi colour control codes
@@ -58,7 +67,7 @@ Configuration file consists of entries, one per regexp, entries are
         command is command to be executed when regexp matches. Its output will
         be mixed with normal stdout, use redirectors ( >/dev/null) if you want
         to suppress it.
-        
+
         skip can be skip=yes, if that case the matched line is skipped
         (discarded from the output), or skip=no, when it is not skipped.
         Default (if you do not have skip keyword) is of course not skipped.
@@ -73,12 +82,12 @@ Configuration file consists of entries, one per regexp, entries are
 
             stop means that the regexp will be coloured and program will move to the
             next line (i.e. ignoring other regexp's) 
-            
+
             previous means the count will be the same as for the previous line
-            
+
             block marks a start of a multiline block of text, coloured with
             the same colour
-            
+
             unblock, obviously, marks the end of such a block
 
 
@@ -102,7 +111,7 @@ Configuration file consists of entries, one per regexp, entries are
         regexp=^\s{0,5}$
         colours=default
         count=unblock
-    
+
         this will turn all correctly formatted mail signatures red.
 
     Regular expressions are evaluated from top to bottom, this allows nested
@@ -154,7 +163,7 @@ etc...
         in your /etc/grc.conf, then typing grc cat /var/log/syslog will use 
         conf.log to colourise the output,
         grc /usr/sbin/traceroute www.linux.org will use conf.traceroute
-    
+
 Miscellaneous remarks:
 
     You should get yourself familiar with regular expressions. Good reading is 
@@ -188,8 +197,16 @@ Miscellaneous remarks:
 
     will display pathnames in bold blinking green
 
+-----------
+Python 3 compatibility:
 
+There is some preliminary python3 support, meaning that both grc and
+grcat will run under both python2 and python3. However, all the regular
+expressions are strings, and grcat works on string input (not bytes).
+Therefore it will miserably fail if fed input with invalid UTF-8
+characters.
 
+-----------
 Hint taken from logcoloriser README:
 
 To have your syslog show on your tty12 in colour, do:
@@ -207,4 +224,4 @@ in your system startup script, if you have GNU tail:
 or, if you have recent BSD tail:
 
     tail -F /var/log/syslog | grcat conf.log >/dev/tty12
-    
+
