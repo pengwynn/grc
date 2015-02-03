@@ -1,6 +1,6 @@
 #! /usr/bin/python
 
-import sys, os, string, re, signal
+import sys, os, string, re, signal, errno
 
 #some default definitions
 colours = {
@@ -54,17 +54,17 @@ def add2list(clist, m, patterncolour):
             clist.append((m.start(group), m.end(group), patterncolour[0]))
 
 def get_colour(x):
-    if colours.has_key(x):
+    if x in colours:
         return colours[x]
     elif len(x)>=2 and x[0]=='"' and x[-1]=='"':
         return eval(x)
     else:
-        raise ValueError, 'Bad colour specified: '+x
+        raise ValueError('Bad colour specified: '+x)
 
 
 home = []
 conffile = None
-if os.environ.has_key('HOME'):
+if 'HOME' in os.environ:
     home = [os.environ['HOME']+"/.grc/"]
 conffilepath = [""] + home + ["/usr/local/share/grc/", "/usr/share/grc/"]
 conffile_arg = sys.argv[1] # tentative conffile
@@ -81,10 +81,9 @@ regexplist = []
 
 f = open(conffile, "r")
 is_last = 0
-split = string.split
-join = string.join
-lower = string.lower
-letters = string.letters
+split = str.split
+lower = str.lower
+letters = string.ascii_letters
 while not is_last:
     ll = {'count':"more"}
     while 1:
@@ -99,7 +98,7 @@ while not is_last:
         keyword, value = split(l[:-1], "=", 1)
         keyword = lower(keyword)
         if not keyword in ["regexp", "colours", "count", "command", "skip"]:
-            raise ValueError, "Invalid keyword"
+            raise ValueError("Invalid keyword")
         ll[keyword] = value
 
     # Split string into one string per regex group
@@ -113,11 +112,13 @@ while not is_last:
     #        c = c + colours[i]
     #    colstrings.append(c)
     # do not try to understand the optimized form below :-)
-    if ll.has_key("colours"):
-        colstrings = map(
-                        lambda colgroup:
-                            (join(map(lambda x: get_colour(x), split(colgroup)),'')),
-                        split(ll['colours'], ',')
+    if 'colours' in ll:
+        colstrings = list(
+                        map(
+                            lambda colgroup:
+                                ''.join(map(lambda x: get_colour(x), split(colgroup))),
+                                split(ll['colours'], ',')
+                            )
                         )
         ll['colours'] = colstrings
 
@@ -138,12 +139,11 @@ while 1:
     skip = 0
     for pattern in regexplist:
         pos = 0
-        has_key = pattern.has_key
         currcount = pattern['count']
         while 1:
             m = pattern['regexp'](line, pos)
             if m:
-                if has_key('colours'):
+                if 'colours' in pattern:
                     if currcount == "block":
                         blockflag = 1
                         blockcolour = pattern['colours'][0]
@@ -164,13 +164,13 @@ while 1:
                     else:
                         prevcount = "once"
                         pos = len(line)
-                if has_key('command'):
+                if 'command' in pattern:
                     os.system(pattern['command'])
-                    if not has_key('colours'):
+                    if 'colours' not in pattern:
                         break
-                if has_key('skip'):
+                if 'skip' in pattern:
                     skip = pattern['skip'] in ("yes", "1", "true")
-                    if not has_key('colours'):
+                    if 'colours' not in pattern:
                         break
             else: break
         if m and currcount == "stop":
@@ -209,5 +209,11 @@ while 1:
                 nline = nline + cline[i] + line[i]
                 clineprev = cline[i]
         nline = nline + colours['default']
-        print nline
+        try:
+            print(nline)
+        except IOError as e:
+            if e.errno == errno.EPIPE:
+                break
+            else:
+                raise
 

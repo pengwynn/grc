@@ -3,28 +3,27 @@
 import os, re, string, sys, getopt, signal
 
 def version():
-    print "Generic Colouriser 1.4"
+    print ("Generic Colouriser 1.5")
     sys.exit()
 
 def help():
-    print "Generic Colouriser 1.4"
-    print
-    print "grc [options] command [args]"
-    print
-    print "Options:"
-    print "-e --stderr    redirect stderr. If this option is selected, "
-    print "               do not automatically redirect stdout"
-    print "-s --stdout    redirect stdout, even if -e is selected"
-    print "-c name --config=name    use name as configuration file for grcat"
-    print "--colour=word  word is one of: on, off, auto"
-    print
+    print("""Generic Colouriser 1.5
+grc [options] command [args]
+Options:")
+-e --stderr    redirect stderr. If this option is selected,
+               do not automatically redirect stdout
+-s --stdout    redirect stdout, even if -e is selected
+-c name --config=name    use name as configuration file for grcat
+--colour=word  word is one of: on, off, auto
+""")
     sys.exit()
 
 
-def keybint(signum, frame):
+def catch_signal(signum, frame):
+    "catch signal sent to grc and forward it to the original application"
     global pidp
     try:
-        os.kill(pidp, signal.SIGINT)
+        os.kill(pidp, signum)
     except OSError: # if the subprocess already died
         pass
 
@@ -73,7 +72,7 @@ if stdoutf == 1:
 conffile = None
 if cfile == "":
     home = []
-    if os.environ.has_key('HOME'):
+    if 'HOME' in os.environ:
         home = [os.environ['HOME']+"/.grc/grc.conf"]
     conffilenames = home + ["/etc/grc.conf"]
     for i in conffilenames:
@@ -90,12 +89,13 @@ if cfile == "":
                 break
             if l[0] == "#" or l[0] == '\012':
                 continue
-            regexp = l[:-1]
-            if re.search(regexp, string.join(args)):
-                cfile = f.readline()[:-1]
+            regexp = l.strip()
+            if re.search(regexp, ' '.join(args)):
+                cfile = f.readline().strip()
                 break
 
-signal.signal(signal.SIGINT, keybint)
+signal.signal(signal.SIGINT, catch_signal)
+
 
 if cfile != "" and colour:
     if stdoutff:
